@@ -1,9 +1,7 @@
 import datasets
 import datetime
-import huggingface_hub
 import json
 import os
-from PIL import Image as PImage
 
 HF_DATASET = "thiagohersan/cordiais-faces"
 
