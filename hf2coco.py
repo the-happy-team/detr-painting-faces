@@ -15,7 +15,7 @@ def load_hf_dataset(dataset_name):
 def get_categories(hf_dataset):
   hf_dataset_categories = hf_dataset["train"].features["objects"].feature["category"].names
   id2label = { i:l for i,l in enumerate(hf_dataset_categories) }
-  id2superlabel = { i:l if l == 'N/A' else "face" for i,l in id2label.items() }
+  id2superlabel = { i: "face" for i in id2label.keys() }
   return [
     { "id": i, "name": l, "supercategory": id2superlabel[i] } for i,l in id2label.items()
   ]
