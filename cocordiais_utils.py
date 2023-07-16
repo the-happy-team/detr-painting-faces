@@ -1,11 +1,24 @@
 import datetime
 import json
 
-ID2LABEL = {"0": "female", "1": "not-female"}
+COCORDIAIS_LABELS = [
+  "female",
+  "not-female"
+]
+
+COCORDIAIS_SUPERLABELS = [
+  "face",
+  "face"
+]
+
+ID2LABEL = {i:l for i,l in enumerate(COCORDIAIS_LABELS)}
+ID2SUPERLABEL = {i:l for i,l in enumerate(COCORDIAIS_SUPERLABELS)}
+
 LABEL2ID = {v:int(k) for k,v in ID2LABEL.items()}
-ID2SUPERLABEL = {int(k): "face" for k in ID2LABEL.keys()}
+LABEL2SUPERLABEL = {l:sl for l,sl in zip(COCORDIAIS_LABELS, COCORDIAIS_SUPERLABELS)}
+
 SUPERLABEL2SUPERID = {sl:si for si,sl in enumerate(set([l for l in ID2SUPERLABEL.values()]))}
-ID2SUPERID = {int(k): int(SUPERLABEL2SUPERID[v]) for k,v in ID2SUPERLABEL.items()}
+
 
 COCORDIAIS_DATASET_INFO = {
   "info": {

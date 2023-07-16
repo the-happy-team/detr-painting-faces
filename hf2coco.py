@@ -1,32 +1,22 @@
 import cocordiais_utils as cocordiais
 import datasets
-import datetime
 import json
 import os
 
 HF_DATASET = "thiagohersan/cordiais-faces"
-COCORDIAIS_PATH = "./cocordiais-hf"
+COCORDIAIS_PATH = "./cocordiais"
 
 
-def load_hf_dataset(dataset_name):
-  dataset_ = datasets.load_dataset(dataset_name)
-  return dataset_["train"].train_test_split(test_size=0.2, shuffle=True, seed=1010)
+def create_cocordiais_from_hf(hf_dataset_name, cocordiais_path):
+  hf_dataset_ = datasets.load_dataset(hf_dataset_name)
+  hf_dataset = hf_dataset_["train"].train_test_split(test_size=0.2, shuffle=True, seed=101010)
 
-
-def get_cocordiais_info(hf_dataset):
-  cocordiais_info = cocordiais.get_cocordiais_info()
-  dataset_categories = hf_dataset["train"].features["objects"].feature["category"].names
-  # TODO: check if dataset categories match baked in categories
-  return cocordiais_info
-
-
-def create_cocordiais_from_hf(hf_dataset, cocordiais_path):
   for split_name, objs in hf_dataset.items():
     split_data_path = os.path.join(cocordiais_path, split_name)
     os.makedirs(split_data_path)
 
     json_path_out = os.path.join(split_data_path, "cocordiais.json")
-    cocordiais_obj = get_cocordiais_info(hf_dataset)
+    cocordiais_info = cocordiais.get_cocordiais_info()
 
     for obj in objs:
       img_path = os.path.join(split_data_path, obj["image_filename"])
@@ -34,7 +24,7 @@ def create_cocordiais_from_hf(hf_dataset, cocordiais_path):
       if not os.path.isfile(img_path):
         obj["image"].save(img_path, "JPEG")
 
-      cocordiais_obj["images"].append({
+      cocordiais_info["images"].append({
         "id": obj["image_id"],
         "width": obj["width"],
         "height": obj["height"],
@@ -47,7 +37,7 @@ def create_cocordiais_from_hf(hf_dataset, cocordiais_path):
 
       ann_objs = obj["objects"]
       for ann_idx in range(len(ann_objs["bbox_id"])):
-        cocordiais_obj["annotations"].append({
+        cocordiais_info["annotations"].append({
           "id": ann_objs["bbox_id"][ann_idx],
           "image_id": obj["image_id"],
           "category_id": ann_objs["category"][ann_idx],
@@ -57,8 +47,7 @@ def create_cocordiais_from_hf(hf_dataset, cocordiais_path):
         })
 
     with open(json_path_out, 'w') as json_file_out_write:
-      json.dump(cocordiais_obj, json_file_out_write)
+      json.dump(cocordiais_info, json_file_out_write)
 
 if __name__ == "__main__":
-  hf_dataset = load_hf_dataset(HF_DATASET)
-  create_cocordiais_from_hf(hf_dataset, COCORDIAIS_PATH)
+  create_cocordiais_from_hf(HF_DATASET, COCORDIAIS_PATH)
