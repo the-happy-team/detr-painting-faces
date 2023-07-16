@@ -1,3 +1,4 @@
+import cocordiais_utils as cocordiais
 import datasets
 import datetime
 import json
@@ -12,33 +13,11 @@ def load_hf_dataset(dataset_name):
   return dataset_["train"].train_test_split(test_size=0.2, shuffle=True, seed=1010)
 
 
-def get_categories(hf_dataset):
-  hf_dataset_categories = hf_dataset["train"].features["objects"].feature["category"].names
-  id2label = { i:l for i,l in enumerate(hf_dataset_categories) }
-  id2superlabel = { i: "face" for i in id2label.keys() }
-  return [
-    { "id": i, "name": l, "supercategory": id2superlabel[i] } for i,l in id2label.items()
-  ]
-
-
 def get_cocordiais_info(hf_dataset):
-  return {
-    "info": {
-      "year": 2023,
-      "version": "1.0.0",
-      "description": "Object Detection dataset to detect female-ish faces in paintings",
-      "contributor": "Thiago Hersan",
-      "url": "https://huggingface.co/datasets/thiagohersan/cordiais-faces",
-      "date_created": "%s" % datetime.datetime.now()
-    },
-    "categories": get_categories(hf_dataset),
-    "licenses": [
-      { "id": 1, "name": "CC BY-NC 2.0", "url": "https://creativecommons.org/licenses/by-nc/2.0/" },
-      { "id": 2, "name": "CC0 1.0", "url": "https://creativecommons.org/publicdomain/zero/1.0/" },
-    ],
-    "images": [],
-    "annotations": []
-  }
+  cocordiais_info = cocordiais.get_cocordiais_info()
+  dataset_categories = hf_dataset["train"].features["objects"].feature["category"].names
+  # TODO: check if dataset categories match baked in categories
+  return cocordiais_info
 
 
 def create_cocordiais_from_hf(hf_dataset, cocordiais_path):
