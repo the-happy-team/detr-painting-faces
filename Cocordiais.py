@@ -52,7 +52,7 @@ CocordiaisUtils.COCORDIAIS_DATASET_INFO["categories"] = [
 ]
 
 
-class CocordiaisData():
+class CocordiaisDataset():
   def GaussianNoise(sigma=25.0):
     def gauss_noise(img):
       dtype = img.dtype
@@ -89,32 +89,36 @@ class CocordiaisData():
 
     return annotations
 
-  def __init__(self, img_processor):
+  def __init__(self, dataset, img_processor, train):
     self.img_processor = img_processor
+    self.train = train
     self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    self.data = dataset.with_transform(self.to_coco)
 
-  def to_coco(self, train=True):
-    def to_coco_fun(examples):
-      image_ids = examples["image_id"]
-      images, bboxes, area, categories = [], [], [], []
+  def __len__(self):
+      return len(self.data)
 
-      for image, objects in zip(examples["image"], examples["objects"]):
-        if train:
-          image = T.PILToTensor()(image).to(self.device)
-          image = CocordiaisData.transform(image)
+  def to_coco(self, examples):
+    image_ids = examples["image_id"]
+    images, bboxes, area, categories = [], [], [], []
 
-        area.append(objects["area"])
-        images.append(image)
-        bboxes.append(objects["bbox"])
-        categories.append(objects["category"])
+    for image, objects in zip(examples["image"], examples["objects"]):
+      image = T.PILToTensor()(image).to(self.device)
 
-      targets = [
-        {"image_id": id_, "annotations": CocordiaisData.to_coco_annotation(id_, cat_, ar_, box_)}
-        for id_, cat_, ar_, box_ in zip(image_ids, categories, area, bboxes)
-      ]
+      if self.train:
+        image = CocordiaisDataset.transform(image)
 
-      return self.img_processor(images=images, annotations=targets, return_tensors="pt")
-    return to_coco_fun
+      area.append(objects["area"])
+      images.append(image)
+      bboxes.append(objects["bbox"])
+      categories.append(objects["category"])
+
+    targets = [
+      {"image_id": id_, "annotations": CocordiaisDataset.to_coco_annotation(id_, cat_, ar_, box_)}
+      for id_, cat_, ar_, box_ in zip(image_ids, categories, area, bboxes)
+    ]
+
+    return self.img_processor(images=images, annotations=targets, return_tensors="pt")
 
   def collate_batch(self, batch):
     pixel_values = [item["pixel_values"] for item in batch]
