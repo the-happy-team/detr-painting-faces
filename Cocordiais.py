@@ -59,7 +59,7 @@ class CocordiaisDataset():
       if not img.is_floating_point():
         img = img.to(torch.float32)
 
-      out = img + sigma * torch.randn_like(img)
+      out = (img + sigma * torch.randn_like(img)).clamp(min=0.0, max=255.0)
 
       if out.dtype != dtype:
          out = out.to(dtype)
@@ -67,12 +67,12 @@ class CocordiaisDataset():
     return gauss_noise
 
   transform = T.Compose([
-    T.ColorJitter(brightness=0.5, hue=0.3),
-    T.RandomSolarize(threshold=200.0),
+    T.ColorJitter(brightness=(0.5, 2.0), hue=0.25, contrast=(0.8, 1.5), saturation=(0.8, 1.5)),
+    # T.RandomSolarize(threshold=128.0),
     T.RandomEqualize(),
-    GaussianNoise(sigma=20.0),
     T.RandomPosterize(bits=4),
-    T.GaussianBlur(kernel_size=5, sigma=(0.1, 5))
+    GaussianNoise(sigma=16.0),
+    # T.GaussianBlur(kernel_size=5, sigma=3)
   ])
 
   def to_coco_annotation(image_id, category, area, bbox):
