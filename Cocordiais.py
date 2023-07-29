@@ -1,6 +1,8 @@
 import datasets
 import datetime
 
+import matplotlib.pyplot as plt
+
 import torch
 import torchvision.transforms as T
 
@@ -68,6 +70,26 @@ class CocordiaisUtils():
       license=CocordiaisUtils.COCORDIAIS_DATASET_INFO["licenses"][0]["name"],
       features=CocordiaisUtils.COCORDIAIS_FEATURES
     )
+
+  def plot_results(pil_img, results):
+    PLOT_COLORS = [
+      [0.494, 0.184, 0.556], [0.929, 0.694, 0.125]
+    ]
+
+    scores = results["scores"]
+    labels = results["labels"]
+    boxes = results["boxes"]
+
+    plt.figure(figsize=(16,10))
+    plt.imshow(pil_img)
+    ax = plt.gca()
+
+    for score, label, (xmin, ymin, xmax, ymax) in zip(scores.tolist(), labels.tolist(), boxes.tolist()):
+      ax.add_patch(plt.Rectangle((xmin, ymin), xmax - xmin, ymax - ymin, fill=False, color=PLOT_COLORS[label], linewidth=3))
+      text = f'{CocordiaisUtils.ID2LABEL[label]}: {score:0.2f}'
+      ax.text(xmin, ymin, text, fontsize=15, bbox=dict(facecolor='yellow', alpha=0.5))
+    plt.axis('off')
+    plt.show()
 
 CocordiaisUtils.COCORDIAIS_DATASET_INFO["categories"] = [
   { "id": i, "name": l, "supercategory": CocordiaisUtils.ID2SUPERLABEL[i] } for i,l in CocordiaisUtils.ID2LABEL.items()
