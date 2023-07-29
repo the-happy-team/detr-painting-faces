@@ -71,14 +71,26 @@ class CocordiaisUtils():
       features=CocordiaisUtils.COCORDIAIS_FEATURES
     )
 
-  def plot_results(pil_img, results):
+  def bboxes_xcycwh_to_xyxy(annotations):
+    ih, iw = tuple(annotations["orig_size"])
+    bboxes_xyxy = []
+    for (xc, yc, bw, bh) in annotations["boxes"]:
+      bboxes_xyxy.append([
+        (xc - bw / 2) * iw,
+        (yc - bh / 2) * ih,
+        (xc + bw / 2) * iw,
+        (yc + bh / 2) * ih
+      ])
+    return torch.tensor(bboxes_xyxy)
+
+  def plot_boxes(pil_img, boxes_info):
     PLOT_COLORS = [
       [0.494, 0.184, 0.556], [0.929, 0.694, 0.125]
     ]
 
-    scores = results["scores"]
-    labels = results["labels"]
-    boxes = results["boxes"]
+    scores = boxes_info["scores"]
+    labels = boxes_info["labels"]
+    boxes = boxes_info["boxes"]
 
     plt.figure(figsize=(16,10))
     plt.imshow(pil_img)
