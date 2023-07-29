@@ -161,6 +161,7 @@ class CocordiaisDataset():
 
     for image, objects in zip(examples["image"], examples["objects"]):
       image = T.PILToTensor()(image).to(self.device)
+      image = T.GaussianBlur(kernel_size=5, sigma=3)(image)
 
       if self.train:
         image = CocordiaisDataset.transform(image)
