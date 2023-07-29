@@ -1,5 +1,5 @@
+import datasets
 import datetime
-import json
 
 import torch
 import torchvision.transforms as T
@@ -44,8 +44,30 @@ class CocordiaisUtils():
     "annotations": [],
   }
 
-  def get_cocordiais_info():
-    return json.loads(json.dumps(CocordiaisUtils.COCORDIAIS_DATASET_INFO))
+  COCORDIAIS_FEATURES = datasets.Features({
+    "image_id": datasets.Value("int64"),
+    "image": datasets.Image(decode=True),
+    "image_filename": datasets.Value("string"),
+    "width": datasets.Value("int64"),
+    "height": datasets.Value("int64"),
+    "objects": datasets.Sequence(feature={
+      "bbox_id": datasets.Value("int64"),
+      "category": datasets.ClassLabel(names=list(LABEL2ID.keys())),
+      "bbox": datasets.Sequence(feature=datasets.Value("int64"), length=4),
+      "super_category": datasets.ClassLabel(names=list(set(COCORDIAIS_SUPERLABELS))),
+      "area": datasets.Value("int64"),
+      "is_crowd": datasets.Value("bool")
+    })
+  })
+
+  def get_dataset_info():
+    return datasets.DatasetInfo(
+      description=CocordiaisUtils.COCORDIAIS_DATASET_INFO["info"]["description"],
+      homepage=CocordiaisUtils.COCORDIAIS_DATASET_INFO["info"]["url"],
+      version=CocordiaisUtils.COCORDIAIS_DATASET_INFO["info"]["version"],
+      license=CocordiaisUtils.COCORDIAIS_DATASET_INFO["licenses"][0]["name"],
+      features=CocordiaisUtils.COCORDIAIS_FEATURES
+    )
 
 CocordiaisUtils.COCORDIAIS_DATASET_INFO["categories"] = [
   { "id": i, "name": l, "supercategory": CocordiaisUtils.ID2SUPERLABEL[i] } for i,l in CocordiaisUtils.ID2LABEL.items()
