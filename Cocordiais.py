@@ -111,11 +111,12 @@ class CocordiaisDataset():
 
     return annotations
 
-  def __init__(self, dataset, img_processor, train):
+  def __init__(self, dataset, img_processor, train, gender=True):
     self.img_processor = img_processor
     self.train = train
     self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     self.data = dataset.with_transform(self.to_coco)
+    self.gender = gender
 
   def __len__(self):
       return len(self.data)
@@ -133,7 +134,10 @@ class CocordiaisDataset():
       area.append(objects["area"])
       images.append(image)
       bboxes.append(objects["bbox"])
-      categories.append(objects["category"])
+      if self.gender:
+        categories.append(objects["category"])
+      else:
+        categories.append(objects["super_category"])
 
     targets = [
       {"image_id": id_, "annotations": CocordiaisDataset.to_coco_annotation(id_, cat_, ar_, box_)}
