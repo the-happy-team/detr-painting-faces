@@ -124,11 +124,9 @@ class CocordiaisDataset():
 
   transform = T.Compose([
     T.ColorJitter(brightness=(0.5, 2.0), hue=0.25, contrast=(0.8, 1.5), saturation=(0.8, 1.5)),
-    # T.RandomSolarize(threshold=128.0),
     T.RandomEqualize(),
     T.RandomPosterize(bits=4),
-    GaussianNoise(sigma=16.0),
-    # T.GaussianBlur(kernel_size=5, sigma=3)
+    # GaussianNoise(sigma=8.0)
   ])
 
   def to_coco_annotation(image_id, category, area, bbox):
@@ -161,7 +159,6 @@ class CocordiaisDataset():
 
     for image, objects in zip(examples["image"], examples["objects"]):
       image = T.PILToTensor()(image).to(self.device)
-      image = T.GaussianBlur(kernel_size=5, sigma=3)(image)
 
       if self.train:
         image = CocordiaisDataset.transform(image)
