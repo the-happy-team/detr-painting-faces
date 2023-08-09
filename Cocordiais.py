@@ -109,13 +109,13 @@ CocordiaisUtils.COCORDIAIS_DATASET_INFO["categories"] = [
 
 
 class CocordiaisDataset():
-  def GaussianNoise(sigma=25.0):
+  def GaussianNoise(sigma=4.0):
     def gauss_noise(img):
       dtype = img.dtype
       if not img.is_floating_point():
         img = img.to(torch.float32)
 
-      out = (img + sigma * torch.randn_like(img)).clamp(min=0.0, max=255.0)
+      out = (img + sigma * torch.randn_like(img))
 
       if out.dtype != dtype:
          out = out.to(dtype)
@@ -123,10 +123,11 @@ class CocordiaisDataset():
     return gauss_noise
 
   transform = T.Compose([
+    T.GaussianBlur(kernel_size=5, sigma=(1, 5)),
+    GaussianNoise(sigma=8.0),
     T.ColorJitter(brightness=(0.5, 2.0), hue=0.25, contrast=(0.8, 1.5), saturation=(0.8, 1.5)),
     T.RandomEqualize(),
     T.RandomPosterize(bits=4),
-    # GaussianNoise(sigma=8.0)
   ])
 
   def to_coco_annotation(image_id, category, area, bbox):
